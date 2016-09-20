@@ -311,8 +311,8 @@ myGetJSON( data_url,
     
 
 /* get taxonomy stuff */
-var taxonomy_url = "taxonomy.json";
 var taxonomy_url = "http://viewer.transformap.co/taxonomy.json";
+var taxonomy_url = "taxonomy.json";
 var flat_taxonomy_array,
     tree_menu_json;
 $.getJSON(taxonomy_url, function(returned_data){
