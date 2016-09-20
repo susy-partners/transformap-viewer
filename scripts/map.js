@@ -53,7 +53,7 @@ var map,
     pruneClusterLayer;
 function initMap() {
 
-  icon_attr = ' Icons CC-BY-SA 3.0 <strong>Maps Icons Collection</strong> <a href="https://mapicons.mapsmarker.com" target=_blank>https://mapicons.mapsmarker.com</a>';
+  icon_attr = ' Icons <a href="https://creativecommons.org/licenses/by-sa/3.0/" target=_blank>CC-BY-SA 3.0</a> <strong>Maps Icons Collection</strong> <a href="https://mapicons.mapsmarker.com" target=_blank>https://mapicons.mapsmarker.com</a>';
 
   osm = new L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: 'Map data by <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, under <a href="https://www.openstreetmap.org/copyright">ODbL</a>.' + icon_attr,
