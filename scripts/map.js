@@ -134,9 +134,18 @@ function addPOIsToMap(geoJSONfeatureCollection) {
       return templatePopUpFunction(data);
     }
 
+    var cats = '';
+    if(feature.properties.type_of_initiative) {
+      console.log(feature.properties.type_of_initiative.split(";")[0]);
+      var cat_array = tax_hashtable.cats_of_toistr [ feature.properties.type_of_initiative.split(";")[0] ];
+        // gets all CSS classes set for all parent cats. currently only the last one in style file will be used for icon.
+      if(cat_array && cat_array.length) {
+        cats = ' ' + cat_array.join(" ");
+      }
+    }
     var pdata = {
       icon:  new L.divIcon({
-        className: 'my-div-icon',
+        className: 'my-div-icon' + cats,
         iconSize:30,
         html:"<div><div>" + feature.properties.name + "</div></div>"
       }),
@@ -409,6 +418,10 @@ function convert_tax_to_tree() {
 
     var parent_uuids = flat_type_of_initiative.subclass_of.value.split(";");
 
+    //do it also here, saves computation time
+    var parent_uuid_qnrs = parent_uuids.map(getQNR);
+    tax_hashtable.cats_of_toistr [ flat_type_of_initiative.type_of_initiative_tag.value ] = parent_uuid_qnrs;
+
     parent_uuids.forEach(function(single_toi_uuid) { //they may be subclass of more than one cat
       cats_that_hold_type_of_initiatives.forEach(function(cat){
         if(cat.UUID == single_toi_uuid) {
@@ -424,6 +437,17 @@ function convert_tax_to_tree() {
       });
     });
   };
+
+  // look for subcats in cats of tois, and add their parent cats
+  for(toi in tax_hashtable.cats_of_toistr) {
+    var cat_array = tax_hashtable.cats_of_toistr[toi];
+    cat_array.forEach(function (category_qnr) {
+      var parent_qnr = getQNR(tax_hashtable.cat_qindex[category_qnr].subclass_of.value);
+      if(parent_qnr != tax_hashtable.root_qnr) { //is a subcat
+        cat_array.push(parent_qnr);
+      }
+    });
+  }
 
   return treejson;
 }
@@ -623,13 +647,15 @@ function createToiArray(toi_string) {
   return toi_array;
 }
 
+/* contains mostly links to objects in flat_taxonomy_array */
 var tax_hashtable = {
-  toistr_to_qnr: {},
-  qnr_to_toistr: {},
-  toi_qindex: {},
-  cat_qindex: {},
-  all_qindex: {},
-  toi_count: {},
+  toistr_to_qnr: {},  // "community_garden" : "Q12001"
+  qnr_to_toistr: {},  // "Q12001" : "community_garden"
+  toi_qindex: {},     // "Q12001" : { WD-Object }
+  cat_qindex: {},     // -- || --
+  all_qindex: {},     // -- || --
+  toi_count: {},      // "community_garden" : 5
+  cats_of_toistr: {}, // "community_garden" : [ Q12001, Q12001, ...] // is member of the following cats
   root_qnr: undefined
 }
 
