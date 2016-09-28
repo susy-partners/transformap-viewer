@@ -11,7 +11,7 @@ h1,h2,h3,h4,h5,h6{text-align:center}
 #map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content p.contact{line-height:2em}#map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content p.contact img{width:16px;margin-bottom:-4px;margin-right:6px;display:inline}
 #map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content h3{margin:0;padding:5px 15px 0;text-align:left;font-size:12px;font-weight:bold}
 #map-tiles .my-div-icon{width:25px !important;height:40px;background-image:url("../../bower_components/leaflet/dist/images/marker-green.png");margin-top:-40px}#map-tiles .my-div-icon div{display:none}
-#map-tiles .my-div-icon.Q10001,#map-tiles .my-div-icon.Q10002,#map-tiles .my-div-icon.Q10003,#map-tiles .my-div-icon.Q10004,#map-tiles .my-div-icon.Q10005,#map-tiles .my-div-icon.Q10006,#map-tiles .my-div-icon.Q10007,#map-tiles .my-div-icon.Q10008,#map-tiles .my-div-icon.Q10009,#map-tiles .my-div-icon.Q100100{width:32px !important;height:37px;margin-top:-37px}
+#map-tiles .my-div-icon.Q10001,#map-tiles .my-div-icon.Q10002,#map-tiles .my-div-icon.Q10003,#map-tiles .my-div-icon.Q10004,#map-tiles .my-div-icon.Q10005,#map-tiles .my-div-icon.Q10006,#map-tiles .my-div-icon.Q10007,#map-tiles .my-div-icon.Q10008,#map-tiles .my-div-icon.Q10009,#map-tiles .my-div-icon.Q100100,#map-tiles .my-div-icon.Q100111,#map-tiles .my-div-icon.Q100122{width:32px !important;height:37px;margin-top:-37px}
 #map-tiles .my-div-icon.Q10001{background-image:url("../../assets/yellow_food_agriculture.png")}
 #map-tiles .my-div-icon.Q10002{background-image:url("../../assets/yellow_fairtrade.png")}
 #map-tiles .my-div-icon.Q10003{background-image:url("../../assets/yellow_reuse_reduce_recycle.png")}
