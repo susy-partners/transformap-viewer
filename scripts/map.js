@@ -329,6 +329,7 @@ function setFilterLang(lang) {
   }
   console.log('setFilterLang: ' + lang);
 
+<<<<<<< HEAD
   if(multilang_taxonomies[lang]) {
     setTaxonomy(multilang_taxonomies[lang]);
   } else {
@@ -340,6 +341,17 @@ function setFilterLang(lang) {
     );
   }
 }
+=======
+  $("#map-menu-container .bottom").append(
+      "<div id=susyci>"+
+        "<div class=logo> <img src='assets/susylogo.png' /><br />" +
+          "<a href='http://www.solidarityeconomy.eu/contact/' trn=susy_contact>" + T("susy_contact")+ "</a> | "+
+          "<a href='http://www.solidarityeconomy.eu/imprint/' trn=imprint>" +T("imprint")+"</a>" +
+        "</div>"+
+        "<div trn=susy_disclaimer>" +T("susy_disclaimer")+ "</div>"+
+      "</div>"
+      );
+>>>>>>> modifications for susy-partners
 
 function applyOrAddTaxonomyLang(returned_data) {
   console.log("callback for tax called");
