@@ -52,35 +52,36 @@ var map,
     base_maps,
     pruneClusterLayer;
 function initMap() {
-
-  icon_attr = ' Icons <a href="https://creativecommons.org/licenses/by-sa/3.0/" target=_blank>CC-BY-SA 3.0</a> <strong>Maps Icons Collection</strong> <a href="https://mapicons.mapsmarker.com" target=_blank>https://mapicons.mapsmarker.com</a>';
+  var attr_osm = 'Map data by <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, under <a href="https://www.openstreetmap.org/copyright">ODbL</a>. ',
+      attr_pois = 'POIs by <a href="http://solidariteconomy.eu">SUSY</a>, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC-0</a>. ',
+      icon_attr = ' Icons <a href="https://creativecommons.org/licenses/by-sa/3.0/" target=_blank>CC-BY-SA 3.0</a> <strong>Maps Icons Collection</strong> <a href="https://mapicons.mapsmarker.com" target=_blank>https://mapicons.mapsmarker.com</a>';
 
   osm = new L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: 'Map data by <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, under <a href="https://www.openstreetmap.org/copyright">ODbL</a>.' + icon_attr,
+      attribution: attr_osm + attr_pois + icon_attr,
       maxZoom : 19,
       noWrap: true
   });
   terrain = new L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png', {
       attribution: 'Map tiles by <a href="http://stamen.com/">Stamen Design</a>, '+
-        'under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. '+
-        'Data by <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, under <a href="https://www.openstreetmap.org/copyright">ODbL</a>.' + icon_attr
+        'under <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. '+
+        attr_osm  + attr_pois + icon_attr
   });
   terrain_bg = new L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain-background/{z}/{x}/{y}.png', {
       attribution: 'Map tiles by <a href="http://stamen.com/">Stamen Design</a>, '+
-        'under <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. '+
-        'Data by <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, under <a href="https://www.openstreetmap.org/copyright">ODbL</a>.' + icon_attr
+        'under <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. '+
+        attr_osm + attr_pois + icon_attr 
   });
   hot = new L.tileLayer('http://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
       attribution: 'Tiles courtesy of <a href="http://hot.openstreetmap.org/">Humanitarian OpenStreetMap Team</a>. '+
-        'Data by <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, under <a href="https://www.openstreetmap.org/copyright">ODbL</a>.' + icon_attr
+        attr_osm + attr_pois + icon_attr
   });
 
   if(!base_maps)
     base_maps = {
       'Stamen - Terrain': terrain,
       'Stamen - Terrain Background': terrain_bg,
-      'OpenSteetMap - Mapnik': osm,
-      'Humanitarian OpenSteetMap ': hot
+      'OpenStreetMap - Mapnik': osm,
+      'Humanitarian OpenStreetMap ': hot
     };
   if(!defaultlayer)
     defaultlayer = terrain_bg;
@@ -118,6 +119,8 @@ function initMap() {
   map.addControl(ctrl);
 
   var hash = new L.Hash(map); // Leaflet persistent Url Hash function
+
+  //$('#map-tiles').append('<a href="https://github.com/TransforMap/transformap-viewer" title="Fork me on GitHub" id=forkme target=_blank><img src="assets/forkme-on-github.png" alt="Fork me on GitHub" /></a>');
 }
 initMap();
 
@@ -1083,8 +1086,9 @@ function setFallbackLangs() {
 setFallbackLangs();
 
 
+/* get languages for UI from our Wikibase, and pick languages that are translated there */
 $.getJSON("https://base.transformap.co/wiki/Special:EntityData/Q5.json", function (returned_data){
-  for(lang in returned_data.entities.Q5.labels) { //Q5 is arbitraty. Choose one that gets translated for sure.
+  for(lang in returned_data.entities.Q5.labels) { //Q5 is arbitrary. Choose one that gets translated for sure.
     supported_languages.push(lang);
   }
   var langstr = supported_languages.join("|");
@@ -1120,6 +1124,7 @@ $.getJSON("https://base.transformap.co/wiki/Special:EntityData/Q5.json", functio
     langnames.forEach(function (item) {
       var langcode = langnames_abbr[item];
       var is_default = (langcode == current_lang) ? " class=default" : "";
+      console.log("adding lang '" + langcode + "' (" + item + ")");
       $("#languageSelector ul").append("<li targetlang=" + langcode + is_default + " onClick='switchToLang(\""+langcode+"\");'>"+item+"</li>");
     });
   });
@@ -1131,14 +1136,47 @@ function switchToLang(lang) {
   current_lang = lang;
   setFallbackLangs();
 
-  $("#map-menu-container [trn]").each(function(){
-    var trans_id = $(this).attr("trn");
-    $(this).text(T(trans_id));
-  });
+  updateTranslatedTexts();
+
+  if(! dictionary[lang]) {
+    var dict_uri = "https://raw.githubusercontent.com/TransforMap/transformap-viewer-translations/master/json/"+lang+".json";
+
+    $.ajax({
+      url: dict_uri,
+      context: { lang: current_lang },
+      success: function(returned_data) {
+        var trans_jsonobj = JSON.parse(returned_data);
+
+        if(! dictionary[this.lang])
+          dictionary[this.lang] = {};
+        for (item in trans_jsonobj) {
+          var index = reverse_dic[item];
+          dictionary[this.lang][index] = trans_jsonobj[item];
+        }
+
+        console.log("successfully fetched " + this.lang);
+        updateTranslatedTexts();
+
+      }
+    });
+
+  }
 
   console.log("new lang:" +lang);
 }
 
+function updateTranslatedTexts() {
+  $("#map-menu-container [trn]").each(function(){
+    var trans_id = $(this).attr("trn");
+    $(this).text(T(trans_id));
+  });
+}
+
+/*
+ * The English translations are held here for ease of use and faster loading times
+ * all other Translations are managed via Weblate in this repo:
+ * https://github.com/TransforMap/transformap-viewer-translations
+ */
 var dictionary = {
   en: {
     "en_adv_filters" : "Enable Advanced Filter Mode",
@@ -1146,37 +1184,23 @@ var dictionary = {
     "address" : "Address",
     "contact" : "Contact",
     "opening_hours" : "Opening hours",
-    "type_of_initiative" : "Type Of Initiative",
+    "type_of_initiative" : "Type of Initiative",
     "reset_filters" : "Reset filters",
     "active_filters" : "Active Filters:",
     "show_map" : "Show map",
     "clickanyfilterhint" : "Click any [+] to add a filter",
     "imprint" : "Imprint",
-    "susy_contact" : "Contact",
     "susy_disclaimer" : "This website has been produced with the financial assistance of the European Union. The contents of this website are the sole responsibility of the SUSY initiative and can under no circumstances be regarded as reflecting the position of the European Union.",
-    "" : "",
-    "LAST:":""
-
-  },
-  de: {
-    "en_adv_filters" : "Erweiterte Filter einschalten",
-    "dis_adv_filters" : "Erweiterte Filter ausschalten",
-    "address" : "Adresse",
-    "contact" : "Kontaktdaten",
-    "opening_hours" : "Öffnungszeiten",
-    "type_of_initiative" : "Typ der Initiative",
-    "reset_filters" : "Filter zurücksetzen",
-    "active_filters" : "Aktive Filter:",
-    "show_map" : "Zurück zur Karte",
-    "clickanyfilterhint" : "Auf [+] klicken um Filter hinzuzufügen",
-    "imprint" : "Impressum",
-    "susy_contact" : "Kontakt",
     "" : "",
     "LAST:":""
   }
 }
 
-/* returns the string accoring to id in the following preferred order:
+var reverse_dic = {}; //needed for faster lookups
+for (i in dictionary.en)
+  reverse_dic[dictionary.en[i]] = i;
+
+/* returns the string according to id in the following preferred order:
  * 1. current_lang
  * 2-n fallback languages
  */
