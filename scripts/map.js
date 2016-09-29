@@ -53,26 +53,27 @@ var map,
     pruneClusterLayer;
 function initMap() {
   var attr_osm = 'Map data by <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, under <a href="https://www.openstreetmap.org/copyright">ODbL</a>. ',
-      attr_pois = 'POIs by <a href="http://solidariteconomy.eu">SUSY</a>, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC-0</a>. '
+      attr_pois = 'POIs by <a href="http://solidariteconomy.eu">SUSY</a>, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC-0</a>. ',
+      icon_attr = ' Icons <a href="https://creativecommons.org/licenses/by-sa/3.0/" target=_blank>CC-BY-SA 3.0</a> <strong>Maps Icons Collection</strong> <a href="https://mapicons.mapsmarker.com" target=_blank>https://mapicons.mapsmarker.com</a>';
 
   osm = new L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: attr_osm + attr_pois,
+      attribution: attr_osm + attr_pois + icon_attr,
       maxZoom : 19,
       noWrap: true
   });
   terrain = new L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain/{z}/{x}/{y}.png', {
       attribution: 'Map tiles by <a href="http://stamen.com/">Stamen Design</a>, '+
         'under <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. '+
-        attr_osm  + attr_pois
+        attr_osm  + attr_pois + icon_attr
   });
   terrain_bg = new L.tileLayer('https://stamen-tiles-{s}.a.ssl.fastly.net/terrain-background/{z}/{x}/{y}.png', {
       attribution: 'Map tiles by <a href="http://stamen.com/">Stamen Design</a>, '+
         'under <a href="https://creativecommons.org/licenses/by/3.0">CC BY 3.0</a>. '+
-        attr_osm + attr_pois
+        attr_osm + attr_pois + icon_attr
   });
   hot = new L.tileLayer('http://tile-{s}.openstreetmap.fr/hot/{z}/{x}/{y}.png', {
       attribution: 'Tiles courtesy of <a href="http://hot.openstreetmap.org/">Humanitarian OpenStreetMap Team</a>. '+
-        attr_osm + attr_pois
+        attr_osm + attr_pois + icon_attr
   });
 
   if(!base_maps)
@@ -138,9 +139,18 @@ function addPOIsToMap(geoJSONfeatureCollection) {
       return templatePopUpFunction(data);
     }
 
+    var cats = '';
+    if(feature.properties.type_of_initiative) {
+      console.log(feature.properties.type_of_initiative.split(";")[0]);
+      var cat_array = tax_hashtable.cats_of_toistr [ feature.properties.type_of_initiative.split(";")[0] ];
+        // gets all CSS classes set for all parent cats. currently only the last one in style file will be used for icon.
+      if(cat_array && cat_array.length) {
+        cats = ' ' + cat_array.join(" ");
+      }
+    }
     var pdata = {
       icon:  new L.divIcon({
-        className: 'my-div-icon',
+        className: 'my-div-icon' + cats,
         iconSize:30,
         html:"<div><div>" + feature.properties.name + "</div></div>"
       }),
@@ -306,8 +316,8 @@ myGetJSON( data_url,
     
 
 /* get taxonomy stuff */
-var taxonomy_url = "taxonomy.json";
 var taxonomy_url = "http://viewer.transformap.co/taxonomy.json";
+var taxonomy_url = "taxonomy.json";
 var flat_taxonomy_array,
     tree_menu_json;
 $.getJSON(taxonomy_url, function(returned_data){
@@ -413,6 +423,10 @@ function convert_tax_to_tree() {
 
     var parent_uuids = flat_type_of_initiative.subclass_of.value.split(";");
 
+    //do it also here, saves computation time
+    var parent_uuid_qnrs = parent_uuids.map(getQNR);
+    tax_hashtable.cats_of_toistr [ flat_type_of_initiative.type_of_initiative_tag.value ] = parent_uuid_qnrs;
+
     parent_uuids.forEach(function(single_toi_uuid) { //they may be subclass of more than one cat
       cats_that_hold_type_of_initiatives.forEach(function(cat){
         if(cat.UUID == single_toi_uuid) {
@@ -428,6 +442,17 @@ function convert_tax_to_tree() {
       });
     });
   };
+
+  // look for subcats in cats of tois, and add their parent cats
+  for(toi in tax_hashtable.cats_of_toistr) {
+    var cat_array = tax_hashtable.cats_of_toistr[toi];
+    cat_array.forEach(function (category_qnr) {
+      var parent_qnr = getQNR(tax_hashtable.cat_qindex[category_qnr].subclass_of.value);
+      if(parent_qnr != tax_hashtable.root_qnr) { //is a subcat
+        cat_array.push(parent_qnr);
+      }
+    });
+  }
 
   return treejson;
 }
@@ -627,13 +652,15 @@ function createToiArray(toi_string) {
   return toi_array;
 }
 
+/* contains mostly links to objects in flat_taxonomy_array */
 var tax_hashtable = {
-  toistr_to_qnr: {},
-  qnr_to_toistr: {},
-  toi_qindex: {},
-  cat_qindex: {},
-  all_qindex: {},
-  toi_count: {},
+  toistr_to_qnr: {},  // "community_garden" : "Q12001"
+  qnr_to_toistr: {},  // "Q12001" : "community_garden"
+  toi_qindex: {},     // "Q12001" : { WD-Object }
+  cat_qindex: {},     // -- || --
+  all_qindex: {},     // -- || --
+  toi_count: {},      // "community_garden" : 5
+  cats_of_toistr: {}, // "community_garden" : [ Q12001, Q12001, ...] // is member of the following cats
   root_qnr: undefined
 }
 
