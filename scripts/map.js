@@ -120,7 +120,7 @@ function initMap() {
 
   var hash = new L.Hash(map); // Leaflet persistent Url Hash function
 
-  $('#map-tiles').append('<a href="https://github.com/TransforMap/transformap-viewer" title="Fork me on GitHub" id=forkme target=_blank><img src="assets/forkme-on-github.png" alt="Fork me on GitHub" /></a>');
+  //$('#map-tiles').append('<a href="https://github.com/TransforMap/transformap-viewer" title="Fork me on GitHub" id=forkme target=_blank><img src="assets/forkme-on-github.png" alt="Fork me on GitHub" /></a>');
 }
 initMap();
 
@@ -348,7 +348,7 @@ $.getJSON(taxonomy_url, function(returned_data){
       "</div>"
       );
 
-/*  $("#map-menu-container .bottom").append(
+  $("#map-menu-container .bottom").append(
       "<div id=susyci>"+
         "<div class=logo> <img src='assets/susylogo.png' /><br />" +
           "<a href='http://www.solidarityeconomy.eu/contact/' trn=susy_contact>" + T("susy_contact")+ "</a> | "+
@@ -356,7 +356,7 @@ $.getJSON(taxonomy_url, function(returned_data){
         "</div>"+
         "<div trn=susy_disclaimer>" +T("susy_disclaimer")+ "</div>"+
       "</div>"
-      ); */
+      );
 
 });
 
