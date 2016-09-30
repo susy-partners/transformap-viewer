@@ -13,7 +13,7 @@ This is a Web-Map plugin that aims at displaying data from the [TransforMap API]
 
 To embed the TransforMap-Viewer into your own website, the simplest way is via an iframe;
 
-    <iframe width="1200" height="500" src="http://viewer.transformap.co/#5/51.166/10.451"></iframe>
+    <iframe width="1200" height="500" src="https://susy-partners.github.io/transformap-viewer/#5/51.166/10.451"></iframe>
 
 If you want to change anything, e.g. style or the displayed data, fork it and embed it from your fork's gh-pages.
 
@@ -75,6 +75,6 @@ We use spaces (2) instead of tabs, please also use this convention.
 
 Currently, there are 3 "branches" of development:
 
-* http://viewer.transformap.co/ - "master" branch, [this](https://github.com/TransforMap/transformap-viewer) repo.
+* http://viewer.transformap.co/ - "master" branch, repo see [here](https://github.com/TransforMap/transformap-viewer).
 * https://susy-mapviewer.github.io/transformap-viewer/ for embedding into the [solidarityeconomy.eu](http://solidarityeconomy.eu) site. Repo see [here](https://github.com/susy-mapviewer/transformap-viewer).
-* https://susy-partners.github.io/transformap-viewer/ for embedding into the websites of SUSY-partners. Repo see [here](https://github.com/susy-partners/transformap-viewer).
+* https://susy-partners.github.io/transformap-viewer/ ([this](https://github.com/susy-partners/transformap-viewer) repo) for embedding into the websites of SUSY-partners.
