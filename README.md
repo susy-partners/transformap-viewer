@@ -75,6 +75,6 @@ We use spaces (2) instead of tabs, please also use this convention.
 
 Currently, there are 3 "branches" of development:
 
-* http://viewer.transformap.co/ - "master" branch, [this](https://github.com/TransforMap/transformap-viewer) repo.
-* https://susy-mapviewer.github.io/transformap-viewer/ for embedding into the [solidarityeconomy.eu](http://solidarityeconomy.eu) site. Repo see [here](https://github.com/susy-mapviewer/transformap-viewer).
+* http://viewer.transformap.co/ - "master" branch, repo see [here](https://github.com/TransforMap/transformap-viewer).
+* https://susy-mapviewer.github.io/transformap-viewer/ ([this](https://github.com/susy-mapviewer/transformap-viewer) repo) for embedding into the [solidarityeconomy.eu](http://solidarityeconomy.eu) site.
 * https://susy-partners.github.io/transformap-viewer/ for embedding into the websites of SUSY-partners. Repo see [here](https://github.com/susy-partners/transformap-viewer).
