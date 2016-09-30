@@ -13,7 +13,7 @@ This is a Web-Map plugin that aims at displaying data from the [TransforMap API]
 
 To embed the TransforMap-Viewer into your own website, the simplest way is via an iframe;
 
-    <iframe width="1200" height="500" src="http://viewer.transformap.co/#5/51.166/10.451"></iframe>
+    <iframe width="1200" height="500" src="https://susy-mapviewer.github.io/transformap-viewer/#5/51.166/10.451"></iframe>
 
 If you want to change anything, e.g. style or the displayed data, fork it and embed it from your fork's gh-pages.
 
