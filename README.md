@@ -11,7 +11,7 @@ This is a Web-Map plugin that aims at displaying data from the [TransforMap API]
 
 ## Embedding
 
-To embed the TransforMap-Viewer into your own website, the simplest way is via an iframe;
+To embed the TransforMap-Viewer into your own website, the simplest way is via an iframe:
 
     <iframe width="1200" height="500" src="https://susy-partners.github.io/transformap-viewer/#5/51.166/10.451"></iframe>
 
@@ -26,6 +26,12 @@ Note: The English translations are handled in the source repository directly.
 To add new strings, you have to add them currently manually to scripts/map.js and in the translation repository, to each of the language files in json/*.json.
 
 # Development
+
+## Data flows
+
+This service relies heavily on different linked data backends, see flowchart:
+
+![Flowchart showing the services involved](TM-Viewer-dataflow.png)
 
 ## CSS
 

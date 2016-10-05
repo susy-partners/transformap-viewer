@@ -42,7 +42,7 @@
 
   <script type='template' id='menuCategoryTemplate'>
     <li class="list-group-item category <%- id %>">
-      <span class="toggle" onClick="clickOnCat('<%- id %>')"><%- itemLabel %>
+      <span class="toggle" onClick="clickOnCat('<%- id %>')" title='<%- description %>'><%- itemLabel %>
         <form class="expert_mode off">
           <input type=checkbox onClick="toggleFilterItem('<%- id %>',this)"/>
         </form>
@@ -53,7 +53,7 @@
   </script>
 
   <script type='template' id='menuTypeOfInitiativeTemplate'>
-    <li class="list-group-item empty <%- id %>" onClick="clickOnInitiative('<%- id %>')">
+    <li class="list-group-item empty <%- id %>" onClick="clickOnInitiative('<%- id %>')" title='<%- description %>'>
       <%- itemLabel %>
         <form class="expert_mode off">
           <input type=checkbox />
@@ -113,13 +113,27 @@
     <% } %>
         <h3><%- T("type_of_initiative") %></h3>
       <p>
-        <% var tois_array = createToiArray(properties['type_of_initiative']);
-           var trans_array = tois_array.map(function(obj){
-             var qnr = tax_hashtable.toistr_to_qnr[obj];
-             return (qnr) ? tax_hashtable.toi_qindex[qnr].itemLabel.value : obj;
-           });
-           var trans_str = trans_array.join(', '); %>
-        <%- trans_str %>
+        <%
+          var tois_array = createToiArray(properties['type_of_initiative']);
+          var trans_array = tois_array.map(function(obj){
+            var qnr = tax_hashtable.toistr_to_qnr[obj];
+            return (qnr) ? tax_hashtable.toi_qindex[qnr].itemLabel.value : obj;
+          });
+          var desc_array = tois_array.map(function(obj){
+            var qnr = tax_hashtable.toistr_to_qnr[obj];
+            return (qnr) ? ( (tax_hashtable.toi_qindex[qnr].description) ? tax_hashtable.toi_qindex[qnr].description.value : "" ) : "";
+          });
+          var wikipedia_array = tois_array.map(function(obj){
+            var qnr = tax_hashtable.toistr_to_qnr[obj];
+            return (qnr) ? ( (tax_hashtable.toi_qindex[qnr].wikipedia) ? tax_hashtable.toi_qindex[qnr].wikipedia.value : "" ) : "";
+          });
+        %>
+
+        <%  for (var i = 0; i < trans_array.length; i++) { %>
+            <span title='<%- desc_array[i] %>' > <%- trans_array[i] %><% if(wikipedia_array[i]) { %>
+            (<a href='<%- wikipedia_array[i] %>' target=_blank title='View Wikipedia article for this type of initiative'><img src='assets/wikipedia-48.png' class=wp alt='View Wikipedia article for this type of initiative' /></a>)<% } %><%- (i < trans_array.length - 1 ) ? ',' : '' %>
+    </span> <% } %>
+
       </p>
   </script>
 
@@ -148,6 +162,7 @@
   <script defer="defer" src="bower_components/leaflet/dist/leaflet.js"></script>
   <script defer="defer" src="scripts/leaflet-hash.js"></script>
   <script defer="defer" src="bower_components/PruneCluster/dist/PruneCluster.min.js"></script>
+  <script defer="defer" src="scripts/red_fetch.js"></script>
   <script defer="defer" src="scripts/map.js"></script>
 </body>
 </html>
