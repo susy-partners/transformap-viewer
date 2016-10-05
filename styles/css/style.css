@@ -8,22 +8,24 @@ h1,h2,h3,h4,h5,h6{text-align:center}
 #map-tiles .leaflet-popup .leaflet-popup-content-wrapper{border-radius:0;padding:0 2px 0 0;margin:0;max-width:300px;max-height:90vh;overflow:auto}#map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content{padding-bottom:15px;margin:0}#map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content h1{text-align:left;padding:15px;padding-right:30px;border-bottom:1px solid #eee;margin-bottom:15px;margin-top:0;color:#1f3050;font-weight:700;font-size:16px}
 #map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content p{font-size:12px;text-align:left;padding:5px 15px;margin:0}#map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content p img{display:block;margin:auto;width:100%;max-width:270px}
 #map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content p a{text-align:left !important;color:#1f3050}
+#map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content p span{display:block}
+#map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content p img.wp{height:1.5em;width:1.5em;display:inline;margin-bottom:-0.35em}
 #map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content p.contact{line-height:2em}#map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content p.contact img{width:16px;margin-bottom:-4px;margin-right:6px;display:inline}
 #map-tiles .leaflet-popup .leaflet-popup-content-wrapper .leaflet-popup-content h3{margin:0;padding:5px 15px 0;text-align:left;font-size:12px;font-weight:bold}
 #map-tiles .my-div-icon{width:25px !important;height:40px;background-image:url("../../bower_components/leaflet/dist/images/marker-green.png");margin-top:-40px}#map-tiles .my-div-icon div{display:none}
-#map-tiles .my-div-icon.Q10001,#map-tiles .my-div-icon.Q10002,#map-tiles .my-div-icon.Q10003,#map-tiles .my-div-icon.Q10004,#map-tiles .my-div-icon.Q10005,#map-tiles .my-div-icon.Q10006,#map-tiles .my-div-icon.Q10007,#map-tiles .my-div-icon.Q10008,#map-tiles .my-div-icon.Q10009,#map-tiles .my-div-icon.Q100100,#map-tiles .my-div-icon.Q100111,#map-tiles .my-div-icon.Q100122{width:32px !important;height:37px;margin-top:-37px}
-#map-tiles .my-div-icon.Q10001{background-image:url("../../assets/turquoise_food_agriculture.png")}
-#map-tiles .my-div-icon.Q10002{background-image:url("../../assets/turquoise_fairtrade.png")}
-#map-tiles .my-div-icon.Q10003{background-image:url("../../assets/turquoise_reuse_reduce_recycle.png")}
-#map-tiles .my-div-icon.Q10004{background-image:url("../../assets/turquoise_housing_habitat.png")}
-#map-tiles .my-div-icon.Q10005{background-image:url("../../assets/turquoise_infrastructure_ressources.png")}
-#map-tiles .my-div-icon.Q10006{background-image:url("../../assets/turquoise_social_inclusion.png")}
-#map-tiles .my-div-icon.Q10007{background-image:url("../../assets/turquoise_education_training.png")}
-#map-tiles .my-div-icon.Q10008{background-image:url("../../assets/turquoise_finance.png")}
-#map-tiles .my-div-icon.Q10009{background-image:url("../../assets/turquoise_active_citizenship.png")}
-#map-tiles .my-div-icon.Q100100{background-image:url("../../assets/turquoise_self-organization_mutuality.png")}
-#map-tiles .my-div-icon.Q100111{background-image:url("../../assets/turquoise_susy-partners.png")}
-#map-tiles .my-div-icon.Q100122{background-image:url("../../assets/turquoise_other.png")}
+#map-tiles .my-div-icon.Q9,#map-tiles .my-div-icon.Q10,#map-tiles .my-div-icon.Q11,#map-tiles .my-div-icon.Q12,#map-tiles .my-div-icon.Q13,#map-tiles .my-div-icon.Q14,#map-tiles .my-div-icon.Q15,#map-tiles .my-div-icon.Q16,#map-tiles .my-div-icon.Q17,#map-tiles .my-div-icon.Q18,#map-tiles .my-div-icon.Q19,#map-tiles .my-div-icon.Q20{width:32px !important;height:37px;margin-top:-37px}
+#map-tiles .my-div-icon.Q9{background-image:url("../../assets/turquoise_food_agriculture.png")}
+#map-tiles .my-div-icon.Q10{background-image:url("../../assets/turquoise_fairtrade.png")}
+#map-tiles .my-div-icon.Q11{background-image:url("../../assets/turquoise_reuse_reduce_recycle.png")}
+#map-tiles .my-div-icon.Q12{background-image:url("../../assets/turquoise_housing_habitat.png")}
+#map-tiles .my-div-icon.Q13{background-image:url("../../assets/turquoise_infrastructure_ressources.png")}
+#map-tiles .my-div-icon.Q14{background-image:url("../../assets/turquoise_social_inclusion.png")}
+#map-tiles .my-div-icon.Q15{background-image:url("../../assets/turquoise_education_training.png")}
+#map-tiles .my-div-icon.Q16{background-image:url("../../assets/turquoise_finance.png")}
+#map-tiles .my-div-icon.Q17{background-image:url("../../assets/turquoise_active_citizenship.png")}
+#map-tiles .my-div-icon.Q18{background-image:url("../../assets/turquoise_self-organization_mutuality.png")}
+#map-tiles .my-div-icon.Q19{background-image:url("../../assets/turquoise_susy-partners.png")}
+#map-tiles .my-div-icon.Q20{background-image:url("../../assets/turquoise_other.png")}
 #map-tiles .my-div-icon:hover>div{display:block;width:200px;z-index:15000;margin-left:-85px;position:absolute;bottom:35px}#map-tiles .my-div-icon:hover>div div{display:block;margin:0 auto;background:rgba(255,255,255,0.8);text-align:center;width:fit-content;border:1px solid #1f3050;border-radius:5px;padding:5px 8px}
 #map-tiles .leaflet-control-layers-toggle{width:26px;height:26px;background-size:22px 22px}
 #map-tiles #forkme{position:absolute;bottom:14px;left:-70px;display:block;width:300px;height:33px;transform:rotate(45deg);overflow:hidden}

@@ -4,8 +4,7 @@
      * To Public License, Version 2, as published by Sam Hocevar. See
      * http://www.wtfpl.net/ for more details. */
 
-var data_url = "https://data.transformap.co/raw/5d6b9d3d32097fd6832200874402cfc3";
-var fallback_data_url = "susydata-fallback.json";
+var redundant_data_urls = [ "https://data.transformap.co/raw/5d6b9d3d32097fd6832200874402cfc3", "https://raw.githubusercontent.com/susy-mapviewer/transformap-viewer/gh-pages/susydata-fallback.json", "susydata-fallback.json" ];
 
 /* fix for leaflet scroll on devices that fire scroll too fast, e.g. Macs
    see https://github.com/Leaflet/Leaflet/issues/4410#issuecomment-234133427
@@ -121,8 +120,26 @@ function initMap() {
   var hash = new L.Hash(map); // Leaflet persistent Url Hash function
 
   //$('#map-tiles').append('<a href="https://github.com/TransforMap/transformap-viewer" title="Fork me on GitHub" id=forkme target=_blank><img src="assets/forkme-on-github.png" alt="Fork me on GitHub" /></a>');
+
+  $("#map-menu-container .top").prepend(
+      "<div id=mobileShowMap><div onClick='switchToMap();' trn=show_map>"+T("show_map")+"</div></div>"
+      );
+
+  $("#map-menu-container .top").append(
+      "<div id=resetfilters onClick='resetFilter();' trn=reset_filters>"+T("reset_filters")+"</div>"
+      );
+
+  $("#map-menu-container .top").append(
+      "<div id=toggleAdvancedFilters onClick='toggleAdvancedFilterMode();' mode='simple' trn=en_adv_filters>"+T("en_adv_filters")+"</div>"
+      );
+
+  $("#map-menu-container .top").append(
+      "<div id=activefilters>" +
+        "<h2 class='expert_mode off' trn=active_filters>" + T("active_filters") + "</h2>" +
+        "<ul class='expert_mode off'></ul>" +
+      "</div>"
+      );
 }
-initMap();
 
 function addPOIsToMap(geoJSONfeatureCollection) {
   if(geoJSONfeatureCollection.type != "FeatureCollection") {
@@ -141,7 +158,6 @@ function addPOIsToMap(geoJSONfeatureCollection) {
 
     var cats = '';
     if(feature.properties.type_of_initiative) {
-      console.log(feature.properties.type_of_initiative.split(";")[0]);
       var cat_array = tax_hashtable.cats_of_toistr [ feature.properties.type_of_initiative.split(";")[0] ];
         // gets all CSS classes set for all parent cats. currently only the last one in style file will be used for icon.
       if(cat_array && cat_array.length) {
@@ -167,201 +183,84 @@ function addPOIsToMap(geoJSONfeatureCollection) {
   return true;
 }
 
-/* new version of getting map data with promises 
-  should fetch data_url, and in case it doesn't respond in a timeout, fetch fallback_data_url
-
-  taken from https://blog.hospodarets.com/fetch_in_action
-*/
-
-var processStatus = function (response) {
-    // status "0" to handle local files fetching (e.g. Cordova/Phonegap etc.)
-    if (response.status === 200 || response.status === 0) {
-        return Promise.resolve(response)
-    } else {
-        return Promise.reject(new Error(response.statusText))
-    }
-};
-
-var parseJson = function (response) {
-    return response.json();
-};
-
-/* @returns {wrapped Promise} with .resolve/.reject/.catch methods */
-// It goes against Promise concept to not have external access to .resolve/.reject methods, but provides more flexibility
-var getWrappedPromise = function () {
-    var wrappedPromise = {},
-            promise = new Promise(function (resolve, reject) {
-                wrappedPromise.resolve = resolve;
-                wrappedPromise.reject = reject;
-            });
-    wrappedPromise.then = promise.then.bind(promise);
-    wrappedPromise.catch = promise.catch.bind(promise);
-    wrappedPromise.promise = promise;// e.g. if you want to provide somewhere only promise, without .resolve/.reject/.catch methods
-    return wrappedPromise;
-};
-
-/* @returns {wrapped Promise} with .resolve/.reject/.catch methods */
-var getWrappedFetch = function () {
-    var wrappedPromise = getWrappedPromise();
-    var args = Array.prototype.slice.call(arguments);// arguments to Array
-
-    fetch.apply(null, args)// calling original fetch() method
-        .then(function (response) {
-            wrappedPromise.resolve(response);
-        }, function (error) {
-            wrappedPromise.reject(error);
-        })
-        .catch(function (error) {
-            wrappedPromise.catch(error);
-        });
-    return wrappedPromise;
-};
-
-/**
- * Fetch JSON by url
- * @param { {
- *  url: {String},
- *  [cacheBusting]: {Boolean}
- * } } params
- * @returns {Promise}
- */
-
-var MAX_WAITING_TIME = 5000;// in ms
-
-var getJSON = function (params) {
-    var wrappedFetch = getWrappedFetch(
-        params.cacheBusting ? params.url + '?' + new Date().getTime() : params.url,
-        {
-            method: 'get',// optional, "GET" is default value
-            headers: {
-                'Accept': 'application/json'
-            }
-        });
-
-    var timeoutId = setTimeout(function () {
-        wrappedFetch.reject(new Error('Load timeout for resource: ' + params.url));// reject on timeout
-    }, MAX_WAITING_TIME);
-
-    return wrappedFetch.promise// getting clear promise from wrapped
-        .then(function (response) {
-            clearTimeout(timeoutId);
-            return response;
-        })
-        .then(processStatus)
-        .then(parseJson);
-};
-
-/*--- TEST  --*/
-var onComplete = function () {
-    console.log('I\'m invoked in any case after success/error');
-};
-
-/*
-getJSON({
-    url: data_url,
-    cacheBusting: true
-}).then(function (data) {// on success
-    console.log('JSON parsed successfully!');
-    console.log(data);
-    addPOIsToMap(data);
-//    onComplete(data);
-}, function (error) {// on reject
-    console.error('An error occured!');
-    console.error(error.message ? error.message : error);
-//    onComplete(error);
-});*/
-
-function myGetJSON(url,success_function,error_function) {
-  var getJSONparams = { url: url, cacheBusting: true };
-
-  getJSON(getJSONparams).then( 
-    function (data) { success_function(data) },
-    function (error) { error_function(error) }
-  );
-}
-
-myGetJSON( data_url, 
-  function(data) { 
-    var adding_pois_successful = addPOIsToMap(data);
-    if(adding_pois_successful) {
-      console.log("1st try to fetch POI data from API ("+data_url+") was successful");
-      return;
-    }
-    console.log("API didn't return useful data from "+data_url+", try static file");
-    myGetJSON( fallback_data_url,
-      function(data) {
-        if(!addPOIsToMap(data))
-          console.error("2nd try to fetch POI data from " + fallback_data_url + " failed too");
-      },
-      function (error) { 
-        console.error("2nd try to fetch POI data from " + fallback_data_url + " failed too"); 
-        console.error(error.message ? error.message : error);
-      });
-    },
-  function(error) {
-    console.log("1st try to fetch POI data from API ("+data_url+") failed, try fallback");
-    myGetJSON( fallback_data_url,
-      function(data) {
-        var adding_pois_successful = addPOIsToMap(data);
-        if(adding_pois_successful)
-          console.log("2nd try to fetch POI data from " + fallback_data_url + " successful.");
-        else
-          console.error("2nd try to fetch POI data from " + fallback_data_url + " failed too");
-      },
-      function (error) { 
-        console.error("2nd try to fetch POI data from " + fallback_data_url + " failed too");
-        console.error(error.message ? error.message : error);
-      });
-  });
-    
+redundantFetch( redundant_data_urls ,addPOIsToMap, function(error) { console.error("none of the POI data urls available"); } );
 
 /* get taxonomy stuff */
-var taxonomy_url = "http://viewer.transformap.co/taxonomy.json";
-var taxonomy_url = "taxonomy.json";
+var multilang_taxonomies = {};
+
 var flat_taxonomy_array,
     tree_menu_json;
-$.getJSON(taxonomy_url, function(returned_data){
 
-  flat_taxonomy_array = returned_data.results.bindings;
+function setTaxonomy(rdf_data) {
+
+  flat_taxonomy_array = rdf_data.results.bindings;
 
   fill_tax_hashtable();
-  tree_menu_json = convert_tax_to_tree();
+  tree_menu_json = convertFlattaxToTree();
 
   buildTreeMenu(tree_menu_json);
+}
 
-  $("#map-menu-container .top").prepend(
-      "<div id=mobileShowMap><div onClick='switchToMap();' trn=show_map>"+T("show_map")+"</div></div>"
-      );
+function getLangTaxURL(lang) {
+  if(!lang) {
+    console.error("setFilterLang: no lang given");
+    return false;
+  }
+  
+  var tax_query =
+    'prefix bd: <http://www.bigdata.com/rdf#> ' +
+    'prefix wikibase: <http://wikiba.se/ontology#> ' +
+    'prefix wdt: <http://base.transformap.co/prop/direct/>' +
+    'prefix wd: <http://base.transformap.co/entity/>' +
+    'SELECT ?item ?itemLabel ?instance_of ?subclass_of ?type_of_initiative_tag ' +
+    'WHERE {' +
+      '?item wdt:P8* wd:Q8 .' +
+      '?item wdt:P8 ?subclass_of .' +
+      'OPTIONAL { ?item wdt:P4 ?instance_of . }' +
+      'OPTIONAL { ?item wdt:P15 ?type_of_initiative_tag }' +
+      'SERVICE wikibase:label {bd:serviceParam wikibase:language "'+lang+'" }' +
+    '}';
 
-  $("#map-menu-container .top").append(
-      "<div id=resetfilters onClick='resetFilter();' trn=reset_filters>"+T("reset_filters")+"</div>"
-      );
+   return 'https://query.base.transformap.co/bigdata/namespace/transformap/sparql?query=' +encodeURIComponent(tax_query) + "&format=json"; // server not CORS ready yet
+}
 
-  $("#map-menu-container .top").append(
-      "<div id=toggleAdvancedFilters onClick='toggleAdvancedFilterMode();' mode='simple' trn=en_adv_filters>"+T("en_adv_filters")+"</div>"
-      );
+function setFilterLang(lang) {
+  if(!lang) {
+    console.error("setFilterLang: no lang given");
+    return false;
+  }
 
-  $("#map-menu-container .top").append(
-      "<div id=activefilters>" +
-        "<h2 class='expert_mode off' trn=active_filters>" + T("active_filters") + "</h2>" +
-        "<ul class='expert_mode off'></ul>" +
-      "</div>"
-      );
+  if(multilang_taxonomies[lang]) {
+    setTaxonomy(multilang_taxonomies[lang]);
+  } else {
+    redundantFetch( [ getLangTaxURL(lang), "https://raw.githubusercontent.com/TransforMap/transformap-viewer-translations/master/taxonomy-backup/susy/taxonomy."+lang+".json" ],
+      applyOrAddTaxonomyLang,
+      function(error) { console.error("none of the taxonomy data urls available") } );
+  }
+}
 
-/*  $("#map-menu-container .bottom").append(
-      "<div id=susyci>"+
-        "<div class=logo> <img src='assets/susylogo.png' /><br />" +
-          "<a href='http://www.solidarityeconomy.eu/contact/' trn=susy_contact>" + T("susy_contact")+ "</a> | "+
-          "<a href='http://www.solidarityeconomy.eu/imprint/' trn=imprint>" +T("imprint")+"</a>" +
-        "</div>"+
-        "<div trn=susy_disclaimer>" +T("susy_disclaimer")+ "</div>"+
-      "</div>"
-      ); */
+function applyOrAddTaxonomyLang(returned_data) {
+  //console.log("callback for tax called");
+  //console.log(returned_data);
+  var lang = returned_data.results.bindings[0].itemLabel["xml:lang"];
+  multilang_taxonomies[lang] = returned_data;
 
-});
+  if(multilang_taxonomies[current_lang])
+    setTaxonomy(multilang_taxonomies[current_lang]);
+  else {
+    for(var i=0; i < fallback_langs.length; i++) {
+      var fb_tax = multilang_taxonomies[fallback_langs[i]];
+      if(fb_tax) {
+        setTaxonomy(fb_tax);
+        return;
+      }
+    }
+    console.error("applyOrAddTaxonomyLang: no taxonomy in any of the user's langs available");
+  }
+}
 
 // note: can only handle 3 tiers (cats, subcats, toi) at the moment.
-function convert_tax_to_tree() {
+function convertFlattaxToTree() {
   var treejson = {
     "xml:lang": "en",
     "elements": []
@@ -379,6 +278,8 @@ function convert_tax_to_tree() {
               "type": "category",
               "UUID": entry.item.value,
               "itemLabel": entry.itemLabel.value,
+              "description": entry.description ? entry.description.value : "",
+              "wikipedia": entry.wikipedia ? entry.wikipedia.value : "",
               "elements" : []
             }
         );
@@ -403,6 +304,8 @@ function convert_tax_to_tree() {
               "type": "subcategory",
               "UUID": entry.item.value,
               "itemLabel": entry.itemLabel.value,
+              "description": entry.description ? entry.description.value : "",
+              "wikipedia": entry.wikipedia ? entry.wikipedia.value : "",
               "elements" : []
             }
           category_item.elements.push(new_subcat);
@@ -435,6 +338,8 @@ function convert_tax_to_tree() {
               "type": "type_of_initiative",
               "UUID": flat_type_of_initiative.item.value,
               "itemLabel": flat_type_of_initiative.itemLabel.value,
+              "description": flat_type_of_initiative.description ? flat_type_of_initiative.description.value : "",
+              "wikipedia": flat_type_of_initiative.wikipedia ? flat_type_of_initiative.wikipedia.value : "",
               "type_of_initiative_tag": flat_type_of_initiative.type_of_initiative_tag.value
             }
           cat.elements.push(type_of_initiative);
@@ -463,7 +368,9 @@ function buildTreeMenu(tree_json) {
     var toi_data =
         {
           id: getQNR(toi.UUID),
-          itemLabel: toi.itemLabel
+          itemLabel: toi.itemLabel,
+          description: toi.description,
+          wikipedia: toi.wikipedia
         }
     parent_element.append( toiTemplate( toi_data  ) );
   }
@@ -473,7 +380,9 @@ function buildTreeMenu(tree_json) {
     var cat_data =
         {
           id: getQNR(cat.UUID),
-          itemLabel: cat.itemLabel
+          itemLabel: cat.itemLabel,
+          description: cat.description,
+          wikipedia: cat.wikipedia
         }
     parent_element.append( catTemplate( cat_data  ) );
 
@@ -616,29 +525,38 @@ function getQNR(uri_string) {
 /*
  * returns array of all tois (Q-Nrs) a cat or subcat has
  */
+var tois_of_cat_cache = {};
 function getTOIsOfCat(id) {
+  if(tois_of_cat_cache[id])
+    return tois_of_cat_cache[id];
+
   var array = [];
 
   //recursive function
-  function dig_deeper_into_taxtree(array_position_object,do_output) {
+  function dig_deeper_into_taxtree(array_position_object,do_output,id) {
+    if(tois_of_cat_cache[id]) {
+      array.push(tois_of_cat_cache[id]);
+      return;
+    }
 
-    if(array_position_object.type != "type_of_initiative" && array_position_object.elements && array_position_object.elements.length) {
-      for(var i=0;i<array_position_object.elements.length;i++) {
+    if(array_position_object.elements && array_position_object.elements.length) { //cat or root
+      for(var i=0; i < array_position_object.elements.length; i++) {
         if(getQNR(array_position_object.elements[i].UUID) == id || do_output) {
-          dig_deeper_into_taxtree(array_position_object.elements[i],true);
+          dig_deeper_into_taxtree(array_position_object.elements[i],true,id);
         }
         else {
-          dig_deeper_into_taxtree(array_position_object.elements[i],false);
+          dig_deeper_into_taxtree(array_position_object.elements[i],false,id);
         }
       }
     }
-    else
+    else if (array_position_object.type == "type_of_initiative") //toi
       if(do_output) {
         array.push(getQNR(array_position_object.UUID));
       }
   }
-  dig_deeper_into_taxtree(tree_menu_json,false);
+  dig_deeper_into_taxtree(tree_menu_json,false,id);
 
+  tois_of_cat_cache[id] = array;
   return array;
 }
 
@@ -661,19 +579,28 @@ var tax_hashtable = {
   all_qindex: {},     // -- || --
   toi_count: {},      // "community_garden" : 5
   cats_of_toistr: {}, // "community_garden" : [ Q12001, Q12001, ...] // is member of the following cats
-  root_qnr: undefined
+  root_qnr: "Q8"
 }
 
+var item_domain = "http://base.transformap.co" //http for now, because SPARQL doesn't know about https
 var tax_elements = {
-  type_of_initiative: "https://base.transformap.co/entity/Q6",
-  category: "https://base.transformap.co/entity/Q5",
-  taxonomy: "https://base.transformap.co/entity/Q3"
+  type_of_initiative: item_domain + "/entity/Q6",
+  category: item_domain + "/entity/Q5",
+  taxonomy: item_domain + "/entity/Q3"
 }
 
 function fill_tax_hashtable() {
+  tax_hashtable.toi_qindex = {};
+  tax_hashtable.cat_qindex = {};
+  tax_hashtable.all_qindex = {};
+
   flat_taxonomy_array.forEach(function(entry){
 
     var qnr = getQNR(entry.item.value);
+    var root_qnr = "";
+
+    if(!entry["instance_of"])
+      return; //continue: ignore erroneous entries
 
     if (entry["instance_of"].value == tax_elements.type_of_initiative ) {
       tax_hashtable.toistr_to_qnr[entry.type_of_initiative_tag.value] = qnr;
@@ -701,8 +628,33 @@ function fill_tax_hashtable() {
 
     } else if(entry["instance_of"].value == tax_elements.taxonomy) {
       tax_hashtable.root_qnr = qnr;
+      root_qnr = qnr;
     }
+
+    // add root entry, if not delivered in RDF file
+    if(!root_qnr) {
+        var root = {
+        "item": {
+          "type": "uri",
+          "value": "http://base.transformap.co/entity/Q8"
+        },
+        "itemLabel": {
+          "xml:lang": "en",
+          "type": "literal",
+          "value": "SSEDAS Taxonomy"
+        },
+        "instance_of": {
+          "type": "uri",
+          "value": "http://base.transformap.co/entity/Q3"
+        }
+      }
+      flat_taxonomy_array.push(root);
+      tax_hashtable.all_qindex["Q8"] = root
+    }
+
   })
+  //console.log("tax_hashtable after fill: ");
+  //console.log(tax_hashtable);
 }
 
 /*
@@ -1070,6 +1022,7 @@ function resetLang() {
       break;
     }
   }
+  switchToLang(current_lang);
 }
 
 function setFallbackLangs() {
@@ -1087,7 +1040,8 @@ setFallbackLangs();
 
 
 /* get languages for UI from our Wikibase, and pick languages that are translated there */
-$.getJSON("https://base.transformap.co/wiki/Special:EntityData/Q5.json", function (returned_data){
+
+function initializeLanguageSwitcher(returned_data){
   for(lang in returned_data.entities.Q5.labels) { //Q5 is arbitrary. Choose one that gets translated for sure.
     supported_languages.push(lang);
   }
@@ -1128,7 +1082,11 @@ $.getJSON("https://base.transformap.co/wiki/Special:EntityData/Q5.json", functio
       $("#languageSelector ul").append("<li targetlang=" + langcode + is_default + " onClick='switchToLang(\""+langcode+"\");'>"+item+"</li>");
     });
   });
-});
+}
+redundantFetch( [ "https://base.transformap.co/wiki/Special:EntityData/Q5.json", "https://raw.githubusercontent.com/TransforMap/transformap-viewer/Q5-fallback.json", "Q5-fallback.json" ],
+  initializeLanguageSwitcher,
+  function(error) { console.error("none of the lang init data urls available") } );
+  
 
 function switchToLang(lang) {
   $("#languageSelector li.default").removeClass("default");
@@ -1161,6 +1119,7 @@ function switchToLang(lang) {
     });
 
   }
+  setFilterLang(lang);
 
   console.log("new lang:" +lang);
 }
@@ -1221,3 +1180,5 @@ function T(id) {
   }
   return "Translation Missing for: '" + id + "'";
 }
+
+initMap();
