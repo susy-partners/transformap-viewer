@@ -155,11 +155,17 @@ function addPOIsToMap(geoJSONfeatureCollection) {
       var templatePopUpFunction = _.template($('#popUpTemplate').html());
       return templatePopUpFunction(data);
     }
+    if(! tax_hashtable.cats_of_toistr_processing_done) {
+      console.log("tax_hashtable.cats_of_toistr not yet here, waiting 10ms")
+      setTimeout(addPOIsToMap,10,geoJSONfeatureCollection); //no IE < 10!
+      return;
+    }
 
     var cats = '';
     if(feature.properties.type_of_initiative) {
+      //if taxonomy is not here yet, this doesn't work...
       var cat_array = tax_hashtable.cats_of_toistr [ feature.properties.type_of_initiative.split(";")[0] ];
-        // gets all CSS classes set for all parent cats. currently only the last one in style file will be used for icon.
+      // gets all CSS classes set for all parent cats. currently only the last one in style file will be used for icon.
       if(cat_array && cat_array.length) {
         cats = ' ' + cat_array.join(" ");
       }
@@ -358,6 +364,7 @@ function convertFlattaxToTree() {
       }
     });
   }
+  tax_hashtable.cats_of_toistr_processing_done = true;
 
   return treejson;
 }
@@ -579,6 +586,7 @@ var tax_hashtable = {
   all_qindex: {},     // -- || --
   toi_count: {},      // "community_garden" : 5
   cats_of_toistr: {}, // "community_garden" : [ Q12001, Q12001, ...] // is member of the following cats
+  cats_of_toistr_processing_done: false,
   root_qnr: "Q8"
 }
 
