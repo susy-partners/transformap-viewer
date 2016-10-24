@@ -329,7 +329,6 @@ function setFilterLang(lang) {
   }
   console.log('setFilterLang: ' + lang);
 
-<<<<<<< HEAD
   if(multilang_taxonomies[lang]) {
     setTaxonomy(multilang_taxonomies[lang]);
   } else {
@@ -341,7 +340,7 @@ function setFilterLang(lang) {
     );
   }
 }
-=======
+
   $("#map-menu-container .bottom").append(
       "<div id=susyci>"+
         "<div class=logo> <img src='assets/susylogo.png' /><br />" +
@@ -351,7 +350,6 @@ function setFilterLang(lang) {
         "<div trn=susy_disclaimer>" +T("susy_disclaimer")+ "</div>"+
       "</div>"
       );
->>>>>>> modifications for susy-partners
 
 function applyOrAddTaxonomyLang(returned_data) {
   console.log("callback for tax called");
