@@ -143,8 +143,8 @@ function initMap() {
   $("#map-menu-container .bottom").append(
       "<div id=susyci>"+
         "<div class=logo> <img src='assets/susylogo.png' /><br />" +
-          "<a href='http://www.solidarityeconomy.eu/contact/' trn=contact>" + T("contact")+ "</a> | "+
-          "<a href='http://www.solidarityeconomy.eu/imprint/' trn=imprint>" +T("imprint")+"</a>" +
+//          "<a href='http://www.solidarityeconomy.eu/contact/' trn=contact>" + T("contact")+ "</a> | "+
+          "<a href='http://www.solidarityeconomy.eu/imprint/' trn=imprint target=_blank>" +T("imprint")+"</a>" +
         "</div>"+
         "<div trn=susy_disclaimer>" +T("susy_disclaimer")+ "</div>"+
       "</div>"
