@@ -1137,6 +1137,13 @@ function switchToLang(lang) {
     });
 
   }
+
+  // As rebuilding the filters does not yet support advanced mode by default,
+  // we switch to simple mode, as language switching is a very rare case.
+  if(getFilterMode() == "advanced")
+    toggleAdvancedFilterMode();
+
+  resetFilter();
   setFilterLang(lang);
 
   console.log("new lang:" +lang);
@@ -1165,7 +1172,9 @@ var dictionary = {
     "reset_filters" : "Reset filters",
     "active_filters" : "Active Filters:",
     "show_map" : "Show map",
-    "clickanyfilterhint" : "Click any [+] to add a filter",
+    "clickanyfilterhint" : "Check a box [ ] to add a filter",
+    "filters" : "Filters",
+    "set_filters" : "set Filters",
     "imprint" : "Imprint",
     "susy_disclaimer" : "This website has been produced with the financial assistance of the European Union. The contents of this website are the sole responsibility of the SUSY initiative and can under no circumstances be regarded as reflecting the position of the European Union.",
     "" : "",
