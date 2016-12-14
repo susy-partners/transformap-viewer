@@ -95,7 +95,7 @@ function initMap() {
       'Humanitarian OpenStreetMap ': base_maps['hot']
     };
   if(!defaultlayer)
-    defaultlayer = base_maps['stamen_terrain_bg'];
+    defaultlayer = base_maps['mapnik'];
 
   var urlparams = getUrlVars();
   var user_bg = urlparams['background'];
