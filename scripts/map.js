@@ -558,6 +558,7 @@ function clickOnInitiative(id) {
   }
    
 
+  console.log("START mapjs");
 }
 
 /*
@@ -649,7 +650,7 @@ var tax_hashtable = {
   root_qnr: "Q8"
 }
 
-var item_domain = "http://base.transformap.co" //http for now, because SPARQL doesn't know about https
+var item_domain = "https://base.transformap.co" //http for now, because SPARQL doesn't know about https
 var tax_elements = {
   type_of_initiative: item_domain + "/entity/Q6",
   category: item_domain + "/entity/Q5",
@@ -703,7 +704,7 @@ function fill_tax_hashtable() {
         var root = {
         "item": {
           "type": "uri",
-          "value": "http://base.transformap.co/entity/Q8"
+          "value": "https://base.transformap.co/entity/Q8"
         },
         "itemLabel": {
           "xml:lang": "en",
@@ -712,7 +713,7 @@ function fill_tax_hashtable() {
         },
         "instance_of": {
           "type": "uri",
-          "value": "http://base.transformap.co/entity/Q3"
+          "value": "https://base.transformap.co/entity/Q3"
         }
       }
       flat_taxonomy_array.push(root);
@@ -872,6 +873,7 @@ function removeFromFilter(id) {
     $("#activefilters ul .hint").remove();
     return;
   }
+  console.log('setFilterLang: ' + lang);
 
   if(tax_hashtable.toi_qindex[id]) { // is a toi
     $("#activefilters ul ."+id).remove();
