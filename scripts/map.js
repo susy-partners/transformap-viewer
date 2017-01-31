@@ -639,6 +639,7 @@ function clickOnInitiative(id) {
   }
 
 
+  console.log("START mapjs");
 }
 
 /*
@@ -964,6 +965,7 @@ function removeFromFilter(id) {
     $("#activefilters ul .hint").remove();
     return;
   }
+  console.log('setFilterLang: ' + lang);
 
   if(tax_hashtable.toi_qindex[id]) { // is a toi
     $("#activefilters ul ."+id).remove();
