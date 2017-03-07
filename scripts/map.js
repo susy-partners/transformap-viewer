@@ -4,7 +4,7 @@
      * To Public License, Version 2, as published by Sam Hocevar. See
      * http://www.wtfpl.net/ for more details. */
 
-var redundant_data_urls = [ "https://data.transformap.co/raw/5d6b9d3d32097fd6832200874402cfc3", "https://raw.githubusercontent.com/susy-partners/transformap-viewer/gh-pages/susydata-fallback.json", "susydata-fallback.json" ];
+var redundant_data_urls = [ "https://data.transformap.co/place/SSEDAS_PARTNER", "https://data.transformap.co/raw/5d6b9d3d32097fd6832200874402cfc3", "https://raw.githubusercontent.com/susy-partners/transformap-viewer/gh-pages/susydata-fallback.json", "susydata-fallback.json" ];
 
 /* fix for leaflet scroll on devices that fire scroll too fast, e.g. Macs
    see https://github.com/Leaflet/Leaflet/issues/4410#issuecomment-234133427
@@ -95,7 +95,7 @@ function initMap() {
       'Humanitarian OpenStreetMap ': base_maps['hot']
     };
   if(!defaultlayer)
-    defaultlayer = base_maps['stamen_terrain_bg'];
+    defaultlayer = base_maps['mapnik'];
 
   var urlparams = getUrlVars();
   var user_bg = urlparams['background'];
@@ -558,6 +558,7 @@ function clickOnInitiative(id) {
   }
    
 
+  console.log("START mapjs");
 }
 
 /*
@@ -649,7 +650,7 @@ var tax_hashtable = {
   root_qnr: "Q8"
 }
 
-var item_domain = "http://base.transformap.co" //http for now, because SPARQL doesn't know about https
+var item_domain = "https://base.transformap.co" //http for now, because SPARQL doesn't know about https
 var tax_elements = {
   type_of_initiative: item_domain + "/entity/Q6",
   category: item_domain + "/entity/Q5",
@@ -703,7 +704,7 @@ function fill_tax_hashtable() {
         var root = {
         "item": {
           "type": "uri",
-          "value": "http://base.transformap.co/entity/Q8"
+          "value": "https://base.transformap.co/entity/Q8"
         },
         "itemLabel": {
           "xml:lang": "en",
@@ -712,7 +713,7 @@ function fill_tax_hashtable() {
         },
         "instance_of": {
           "type": "uri",
-          "value": "http://base.transformap.co/entity/Q3"
+          "value": "https://base.transformap.co/entity/Q3"
         }
       }
       flat_taxonomy_array.push(root);
@@ -872,6 +873,7 @@ function removeFromFilter(id) {
     $("#activefilters ul .hint").remove();
     return;
   }
+  console.log('setFilterLang: ' + lang);
 
   if(tax_hashtable.toi_qindex[id]) { // is a toi
     $("#activefilters ul ."+id).remove();
