@@ -59,7 +59,7 @@ var map,
     pruneClusterLayer;
 function initMap() {
   var attr_osm = 'Map data by <a href="https://openstreetmap.org">OpenStreetMap</a> contributors, under <a href="https://www.openstreetmap.org/copyright">ODbL</a>. ',
-      attr_pois = 'POIs by <a href="http://solidariteconomy.eu">SUSY</a>, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC-0</a>. ',
+      attr_pois = 'POIs by <a href="http://solidarityeconomy.eu">SUSY</a>, <a href="https://creativecommons.org/publicdomain/zero/1.0/">CC-0</a>. ',
       icon_attr = ' Icons <a href="https://creativecommons.org/licenses/by-sa/3.0/" target=_blank>CC-BY-SA 3.0</a> <strong>Maps Icons Collection</strong> <a href="https://mapicons.mapsmarker.com" target=_blank>https://mapicons.mapsmarker.com</a>';
 
   base_maps['mapnik'] = new L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -230,7 +230,7 @@ function getLangTaxURL(lang) {
     console.error("setFilterLang: no lang given");
     return false;
   }
-  
+
   var tax_query =
     'prefix bd: <http://www.bigdata.com/rdf#> ' +
     'prefix wikibase: <http://wikiba.se/ontology#> ' +
@@ -395,7 +395,7 @@ function convertFlattaxToTree() {
     if(a.type_of_initiative_tag && a.type_of_initiative_tag.match(/^other_/)) return 1;
     if(b.type_of_initiative_tag && b.type_of_initiative_tag.match(/^other_/)) return -1;
 
-    if(a.itemLabel < b.itemLabel) 
+    if(a.itemLabel < b.itemLabel)
       return -1
     else
       return 1
@@ -547,7 +547,7 @@ function clickOnInitiative(id) {
     }
     trigger_Filter();
   }
-   
+
 
 }
 
@@ -1144,7 +1144,7 @@ function initializeLanguageSwitcher(returned_data){
 redundantFetch( [ "https://base.transformap.co/wiki/Special:EntityData/Q5.json", "https://raw.githubusercontent.com/TransforMap/transformap-viewer/Q5-fallback.json", "Q5-fallback.json" ],
   initializeLanguageSwitcher,
   function(error) { console.error("none of the lang init data urls available") } );
-  
+
 
 function switchToLang(lang) {
   $("#languageSelector li.default").removeClass("default");
