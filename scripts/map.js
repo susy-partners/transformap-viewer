@@ -230,7 +230,7 @@ function getLangTaxURL(lang) {
     console.error("setFilterLang: no lang given");
     return false;
   }
-  
+
   var tax_query =
     'prefix bd: <http://www.bigdata.com/rdf#> ' +
     'prefix wikibase: <http://wikiba.se/ontology#> ' +
@@ -395,7 +395,7 @@ function convertFlattaxToTree() {
     if(a.type_of_initiative_tag && a.type_of_initiative_tag.match(/^other_/)) return 1;
     if(b.type_of_initiative_tag && b.type_of_initiative_tag.match(/^other_/)) return -1;
 
-    if(a.itemLabel < b.itemLabel) 
+    if(a.itemLabel < b.itemLabel)
       return -1
     else
       return 1
@@ -547,7 +547,7 @@ function clickOnInitiative(id) {
     }
     trigger_Filter();
   }
-   
+
 
 }
 
@@ -1144,7 +1144,7 @@ function initializeLanguageSwitcher(returned_data){
 redundantFetch( [ "https://base.transformap.co/wiki/Special:EntityData/Q5.json", "https://raw.githubusercontent.com/TransforMap/transformap-viewer/Q5-fallback.json", "Q5-fallback.json" ],
   initializeLanguageSwitcher,
   function(error) { console.error("none of the lang init data urls available") } );
-  
+
 
 function switchToLang(lang) {
   $("#languageSelector li.default").removeClass("default");
