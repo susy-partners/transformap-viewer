@@ -23,6 +23,9 @@
   <!-- Mobile viewport optimized: h5bp.com/viewport -->
   <meta name="viewport" content="width=device-width" />
 
+  <!-- Icons -->
+  <link rel="shortcut icon" href="http://transformap.co/images/favicon.png">
+
   <!-- Shims: IE6-8 support of HTML5 elements -->
   <!--[if lt IE 9]>
     <script async src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
@@ -87,10 +90,16 @@
       <%- getDescriptionText(properties)  %>
     </p>
 
+    <% if(properties['addr:housenumber'] || properties['addr:housename'] || properties['addr:street'] || properties['addr:postcode'] || properties['addr:city']) { %>
       <h3><%- T("address") %></h3>
     <p>
-      <%- properties['addr:housenumber'] %> <%- (properties['addr:housename']) ? properties['addr:housename'] + "," : "" %> <%- properties['addr:street'] %><br><%- properties['addr:postcode'] %> <%- properties['addr:city'] %>, <%- properties['addr:country'] %>
+      <span
+        <% if(properties['addr:housenumber_source'] == "osm") { %> class='osm' <% } %>
+      > <%- properties['addr:housenumber'] %> </span>
+      <%- (properties['addr:housename']) ? properties['addr:housename'] + "," : "" %> <%- properties['addr:street'] %><br>
+      <%- properties['addr:postcode'] %> <%- properties['addr:city'] %> <%- (properties['addr:country']) ? "," : "" %> <%- properties['addr:country'] %>
     </p>
+    <% } %>
 
     <% if ((properties['contact:email']) || (properties['contact:website']) || (properties['contact:phone']) || (properties['website'])) { %>
     <h3><%- T("contact") %></h3>
@@ -139,11 +148,31 @@
         %>
 
         <%  for (var i = 0; i < trans_array.length; i++) { %>
-            <span title='<%- desc_array[i] %>' > <%- trans_array[i] %><% if(wikipedia_array[i]) { %>
+            <span class='wp' title='<%- desc_array[i] %>' > <%- trans_array[i] %><% if(wikipedia_array[i]) { %>
             (<a href='<%- wikipedia_array[i] %>' target=_blank title='View Wikipedia article for this type of initiative'><img src='assets/wikipedia-48.png' class=wp alt='View Wikipedia article for this type of initiative' /></a>)<% } %><%- (i < trans_array.length - 1 ) ? ',' : '' %>
     </span> <% } %>
 
       </p>
+      <h3><%- T("linked_data") %></h3>
+      <table>
+        <% if (properties['osm']) { %>
+        <tr>
+          <td>
+            <a href='<%- properties['osm'] %>' target='_blank'>OpenStreetMap</a>
+          </td>
+          <td>
+          </td>
+        </tr>
+        <% } %>
+        <tr>
+          <td>
+            <a href='<%- properties['_uri'] %>' target='_blank'>TransforMap</a> (JSON)
+          </td>
+          <td>
+          </td>
+        </tr>
+      </table>
+
   </script>
 
   <div id="map-menu-container">

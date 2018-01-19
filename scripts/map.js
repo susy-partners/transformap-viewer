@@ -4,7 +4,8 @@
      * To Public License, Version 2, as published by Sam Hocevar. See
      * http://www.wtfpl.net/ for more details. */
 
-var redundant_data_urls = [ "https://data.transformap.co/place/SSEDAS_PARTNER", "https://data.transformap.co/raw/5d6b9d3d32097fd6832200874402cfc3", "https://raw.githubusercontent.com/susy-mapviewer/transformap-viewer/gh-pages/susydata-fallback.json", "susydata-fallback.json" ];
+const endpoint = "https://data.transformap.co/place/";
+var redundant_data_urls = [ endpoint + "SSEDAS_PARTNER", "https://data.transformap.co/raw/5d6b9d3d32097fd6832200874402cfc3", "https://github.com/TransforMap/transformap-viewer/raw/gh-pages/susydata-fallback.json", "susydata-fallback.json" ];
 
 /* fix for leaflet scroll on devices that fire scroll too fast, e.g. Macs
    see https://github.com/Leaflet/Leaflet/issues/4410#issuecomment-234133427
@@ -96,7 +97,7 @@ function initMap() {
       'Humanitarian OpenStreetMap ': base_maps['hot']
     };
   if(!defaultlayer)
-    defaultlayer = base_maps['mapnik'];
+    defaultlayer = base_maps['stamen_terrain_bg'];
 
   var urlparams = getUrlVars();
   var user_bg = urlparams['background'];
@@ -137,33 +138,46 @@ function initMap() {
 
   var hash = new L.Hash(map); // Leaflet persistent Url Hash function
 
-  //$('#map-tiles').append('<a href="https://github.com/TransforMap/transformap-viewer" title="Fork me on GitHub" id=forkme target=_blank><img src="assets/forkme-on-github.png" alt="Fork me on GitHub" /></a>');
+  var topContainer = $("#map-menu-container .top");
 
-  $("#map-menu-container .top").prepend(
+  topContainer.prepend(
       "<div id=mobileShowMap><div onClick='switchToMap();' trn=show_map>"+T("show_map")+"</div></div>"
       );
 
-  $("#map-menu-container .top").append(
+  topContainer.append(
       "<div id=resetfilters onClick='resetFilter();' trn=reset_filters>"+T("reset_filters")+"</div>"
       );
 
-  $("#map-menu-container .top").append(
+  topContainer.append(
       "<div id=toggleAdvancedFilters onClick='toggleAdvancedFilterMode();' mode='simple' trn=en_adv_filters>"+T("en_adv_filters")+"</div>"
       );
 
-  $("#map-menu-container .top").append(
+  var searchElements = [];
+  searchElements.push("<div id='searchFilterWrapper'>");
+	  searchElements.push("<input type='text' id='searchFilter' onKeypress='applySearchFilter($(this).val(), event);' placeholder='"+T("search_filter_placeholder")+"' />");
+	  searchElements.push("<button type='button' onClick='applySearchFilter($(this).prev().val(), event);'>"+T("search_filter_button")+"</button>");
+  searchElements.push("</div>");
+  topContainer.append(searchElements.join(''));
+
+  topContainer.append(
       "<div id=activefilters>" +
         "<h2 class='expert_mode off' trn=active_filters>" + T("active_filters") + "</h2>" +
         "<ul class='expert_mode off'></ul>" +
       "</div>"
       );
+
+  console.log("START mapjs");
 }
 
+var osm_enabled_pois = [];
 function addPOIsToMap(geoJSONfeatureCollection) {
   if(geoJSONfeatureCollection.type != "FeatureCollection") {
     console.error("not a featureCollection");
     return false;
   }
+
+  var op_servers = [ 'https://overpass-api.de/api/', 'http://api.openstreetmap.fr/oapi/', 'http://overpass.osm.rambler.ru/cgi/' ];
+  var osm_query_string = "interpreter?data=[out:json][timeout:180];";
 
   var POIcollection = geoJSONfeatureCollection.features;
   for(var i=0; i < POIcollection.length; i++) {
@@ -172,11 +186,6 @@ function addPOIsToMap(geoJSONfeatureCollection) {
     var livePopup = function(data) { // gets popup content for a marker
       var templatePopUpFunction = _.template($('#popUpTemplate').html());
       return templatePopUpFunction(data);
-    }
-    if(! tax_hashtable.cats_of_toistr_processing_done) {
-      console.log("tax_hashtable.cats_of_toistr not yet here, waiting 10ms")
-      setTimeout(addPOIsToMap,10,geoJSONfeatureCollection); //no IE < 10!
-      return;
     }
 
     var cats = '';
@@ -188,6 +197,7 @@ function addPOIsToMap(geoJSONfeatureCollection) {
         cats = ' ' + cat_array.join(" ");
       }
     }
+
     var pdata = {
       icon:  new L.divIcon({
         className: 'my-div-icon' + cats,
@@ -198,9 +208,23 @@ function addPOIsToMap(geoJSONfeatureCollection) {
       tags: feature.properties,
       properties: feature.properties // is used by _ template
     }
+    if(feature.properties['osm']) {
+      var match = feature.properties['osm'].match(/(node|way|relation)\/?([0-9]+)$/);
+      if(match) {
+        console.log("found osm on " + feature.properties.name + ": " + feature.properties['osm']);
+        osm_query_string += match[1] + "(" + match[2] + ");out;";
+      }
+      osm_enabled_pois.push(feature);
+    }
 
     var pmarker = new PruneCluster.Marker(feature.geometry.coordinates[1], feature.geometry.coordinates[0], pdata);
     pruneClusterLayer.RegisterMarker(pmarker);
+  }
+
+  if(osm_query_string.length > 42) {
+    osm_query_string += "out;"
+    console.log(osm_query_string);
+    redundantFetch([ op_servers[0] + osm_query_string, op_servers[1] + osm_query_string, op_servers[2] + osm_query_string ], parseOverpassData, function(error) { console.error("no overpass server responded"); }, { cacheBusting : false } );
   }
 
   pruneClusterLayer.ProcessView();
@@ -209,13 +233,55 @@ function addPOIsToMap(geoJSONfeatureCollection) {
 
 redundantFetch( redundant_data_urls ,addPOIsToMap, function(error) { console.error("none of the POI data urls available"); } );
 
+/* OSM workflow:
+   fetch data from Overpass API
+   parse returned data
+   add osm-properties to POIcollection
+    as all data is by reference, pdata.properties should get updated?
+*/
+
+function parseOverpassData(overpassJSON) {
+  console.log("parseOverpassData called");
+  if(!overpassJSON.elements) {
+    console.error("parseOverpassData: data invalid");
+    return
+  }
+  for(var i = 0; i < overpassJSON.elements.length; i++) {
+    var p = overpassJSON.elements[i];
+
+    var type = p.type;
+    var id = p.id;
+
+    for(var osm_count = 0; osm_count < osm_enabled_pois.length; osm_count++) {
+      var tm_poi = osm_enabled_pois[osm_count];
+      var osmlink = tm_poi.properties['osm'];
+      var match = osmlink.match(/(node|way|relation)\/?([0-9]+)/);
+      if(match && match[1] == p.type && match[2] == p.id) {
+        console.log("found match between " + match[1] + match[2] + " and tm:" + tm_poi.properties['name'] );
+        for(key in p.tags) {
+          if(!tm_poi.properties[key]) {
+            tm_poi.properties[key] = p.tags[key];
+            tm_poi.properties[key + "_source"] = "osm";
+          }
+        }
+      }
+    }
+  }
+}
+
 /* get taxonomy stuff */
+var taxonomy_url = "http://viewer.transformap.co/taxonomy.json";
+var taxonomy_url = "taxonomy.de.json";
+
 var multilang_taxonomies = {};
 
+//current ones
 var flat_taxonomy_array,
     tree_menu_json;
 
 function setTaxonomy(rdf_data) {
+  console.log("setTaxonomy called, data:")
+  console.log(rdf_data);
 
   flat_taxonomy_array = rdf_data.results.bindings;
 
@@ -227,15 +293,15 @@ function setTaxonomy(rdf_data) {
 
 function getLangTaxURL(lang) {
   if(!lang) {
-    console.error("setFilterLang: no lang given");
+    console.error("getLangTaxURL: no lang given");
     return false;
   }
 
   var tax_query =
     'prefix bd: <http://www.bigdata.com/rdf#> ' +
     'prefix wikibase: <http://wikiba.se/ontology#> ' +
-    'prefix wdt: <http://base.transformap.co/prop/direct/>' +
-    'prefix wd: <http://base.transformap.co/entity/>' +
+    'prefix wdt: <https://base.transformap.co/prop/direct/>' +
+    'prefix wd: <https://base.transformap.co/entity/>' +
     'SELECT ?item ?itemLabel ?instance_of ?subclass_of ?type_of_initiative_tag ?wikipedia ?description ' +
     'WHERE {' +
       '?item wdt:P8* wd:Q8 .' +
@@ -255,20 +321,25 @@ function setFilterLang(lang) {
     console.error("setFilterLang: no lang given");
     return false;
   }
+  console.log('setFilterLang: ' + lang);
 
   if(multilang_taxonomies[lang]) {
     setTaxonomy(multilang_taxonomies[lang]);
   } else {
-    redundantFetch( [ getLangTaxURL(lang), "https://raw.githubusercontent.com/TransforMap/transformap-viewer-translations/master/taxonomy-backup/susy/taxonomy."+lang+".json" ],
+    redundantFetch(
+      [ getLangTaxURL(lang), "https://raw.githubusercontent.com/TransforMap/transformap-viewer-translations/master/taxonomy-backup/susy/taxonomy."+lang+".json" ],
       applyOrAddTaxonomyLang,
-      function(error) { console.error("none of the taxonomy data urls available") } );
+      function(error) { console.error("none of the taxonomy data urls available") },
+      { cacheBusting: false }
+    );
   }
 }
 
 function applyOrAddTaxonomyLang(returned_data) {
-  //console.log("callback for tax called");
-  //console.log(returned_data);
+  console.log("callback for tax called");
+  console.log(returned_data);
   var lang = returned_data.results.bindings[0].itemLabel["xml:lang"];
+  console.log("found lang: " + lang);
   multilang_taxonomies[lang] = returned_data;
 
   if(multilang_taxonomies[current_lang])
@@ -287,6 +358,7 @@ function applyOrAddTaxonomyLang(returned_data) {
 
 // note: can only handle 3 tiers (cats, subcats, toi) at the moment.
 function convertFlattaxToTree() {
+  console.log("convertFlattaxToTree called");
   var treejson = {
     "xml:lang": "en",
     "elements": []
@@ -352,10 +424,6 @@ function convertFlattaxToTree() {
 
     var parent_uuids = flat_type_of_initiative.subclass_of.value.split(";");
 
-    //do it also here, saves computation time
-    var parent_uuid_qnrs = parent_uuids.map(getQNR);
-    tax_hashtable.cats_of_toistr [ flat_type_of_initiative.type_of_initiative_tag.value ] = parent_uuid_qnrs;
-
     parent_uuids.forEach(function(single_toi_uuid) { //they may be subclass of more than one cat
       cats_that_hold_type_of_initiatives.forEach(function(cat){
         if(cat.UUID == single_toi_uuid) {
@@ -373,18 +441,6 @@ function convertFlattaxToTree() {
       });
     });
   };
-
-  // look for subcats in cats of tois, and add their parent cats
-  for(toi in tax_hashtable.cats_of_toistr) {
-    var cat_array = tax_hashtable.cats_of_toistr[toi];
-    cat_array.forEach(function (category_qnr) {
-      var parent_qnr = getQNR(tax_hashtable.cat_qindex[category_qnr].subclass_of.value);
-      if(parent_qnr != tax_hashtable.root_qnr) { //is a subcat
-        cat_array.push(parent_qnr);
-      }
-    });
-  }
-  tax_hashtable.cats_of_toistr_processing_done = true;
 
   function itemLabelCompare(a,b){
     // 'Others' cat should get sorted last
@@ -416,6 +472,8 @@ function convertFlattaxToTree() {
     }
   });
 
+  console.log("treejson: ");
+  console.log(treejson);
   return treejson;
 }
 
@@ -627,7 +685,6 @@ function createToiArray(toi_string) {
   return toi_array;
 }
 
-/* contains mostly links to objects in flat_taxonomy_array */
 var tax_hashtable = {
   toistr_to_qnr: {},  // "community_garden" : "Q12001"
   qnr_to_toistr: {},  // "Q12001" : "community_garden"
@@ -648,6 +705,7 @@ var tax_elements = {
 }
 
 function fill_tax_hashtable() {
+  console.log("fill_tax_hashtable called");
   tax_hashtable.toi_qindex = {};
   tax_hashtable.cat_qindex = {};
   tax_hashtable.all_qindex = {};
@@ -720,6 +778,7 @@ function fill_tax_hashtable() {
  */
 
 var current_filter_tois = []; // array of q-nrs
+var current_filter_search = '';
 
 function trigger_Filter() {
   //console.log(current_filter_tois);
@@ -743,6 +802,8 @@ function resetFilter() {
   $("#map-menu li > span").removeClass("selected");
   $("ul.type-of-initiative").hide();
   $("ul.subcategories").hide();
+  $('#searchFilter').val('');
+  applySearchFilter('');
   removeFromFilter("*");
   trigger_Filter();
   $("#activefilters ul").append("<li class=hint><span trn=clickanyfilterhint>"+T("clickanyfilterhint")+"</span><div class=close onClick=\"clickMinus('hint')\">×</div></li>");
@@ -751,6 +812,14 @@ function resetFilter() {
 
 function getFilterMode() {
   return $("#toggleAdvancedFilters").attr('mode');
+}
+
+function applySearchFilter(keyword, event) {
+	event = event || window.event;
+	current_filter_search = keyword;
+	if (event.keyCode == 13 || event.type == 'click') {
+		trigger_Filter();
+	}
 }
 
 function toggleAdvancedFilterMode() {
@@ -933,16 +1002,17 @@ function removeFromFilter(id) {
   * checks if any attribute in attributes (=TOI) is either the filter_UUID or the TOI is any subclass of the filter_UUID
   */
 function filterMatches(attributes, filter_UUID) {
+
   if(!attributes) {
     console.log("error in filter, no attributes");
     return false;
   }
-  if(!attributes.type_of_initiative) {
-    console.log("error in filter, no type_of_initiative attribute");
-    return false;
+
+  var poiFound = false;
+
+  if(current_filter_tois.length == 0) {
+	  poiFound = true;
   }
-  if(current_filter_tois.length == 0)
-    return true;
 
   //console.log("filter called with filter: " + filter_UUID + " and toi: " + attributes.type_of_initiative);
 
@@ -952,11 +1022,40 @@ function filterMatches(attributes, filter_UUID) {
   for(var i=0;i<toi_array.length;i++){
     var type_of_initiative_QNR = tax_hashtable.toistr_to_qnr[toi_array[i]];
 
-    if(current_filter_tois.indexOf(type_of_initiative_QNR) > -1)
-      return true;
+    if(current_filter_tois.indexOf(type_of_initiative_QNR) > -1) {
+      poiFound = true;
+      break;
+    }
   }
 
-  return false;
+  var searchRelevantPoiProperties = [
+	  'name',
+	  'addr:city',
+	  'addr:street',
+	  'addr:country',
+	  'addr.postcode',
+	  'website',
+	  'contact:website',
+	  'contact:email',
+	  'description'
+  ];
+
+  if (poiFound && current_filter_search != '') {
+	  var searchFilterRegExp = new RegExp(current_filter_search, 'i');
+	  for(searchProperty in searchRelevantPoiProperties) {
+		  if (attributes[searchRelevantPoiProperties[searchProperty]]) {
+			  if (attributes[searchRelevantPoiProperties[searchProperty]].match(searchFilterRegExp)) {
+//				  console.log(searchRelevantPoiProperties[searchProperty] + ': ' + attributes[searchRelevantPoiProperties[searchProperty]]);
+				  poiFound = true;
+				  break;
+			  } else {
+				  poiFound = false;
+			  }
+		  }
+	  }
+  }
+
+  return poiFound;
 }
 
 var popup_image_width = "270px";
@@ -1205,6 +1304,8 @@ var dictionary = {
   en: {
     "en_adv_filters" : "Enable Advanced Filter Mode",
     "dis_adv_filters" : "Disable Advanced Filter Mode",
+    "search_filter_placeholder" : "Keyword",
+    "search_filter_button" : "Search",
     "address" : "Address",
     "contact" : "Contact",
     "opening_hours" : "Opening hours",
@@ -1216,6 +1317,7 @@ var dictionary = {
     "filters" : "Filters",
     "set_filters" : "set Filters",
     "imprint" : "Imprint",
+    "linked_data" : "Linked Data",
     "susy_disclaimer" : "This website has been produced with the financial assistance of the European Union. The contents of this website are the sole responsibility of the SUSY initiative and can under no circumstances be regarded as reflecting the position of the European Union.",
     "" : "",
     "LAST:":""
