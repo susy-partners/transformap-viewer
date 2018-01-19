@@ -188,6 +188,12 @@ function addPOIsToMap(geoJSONfeatureCollection) {
       return templatePopUpFunction(data);
     }
 
+    if(! tax_hashtable.cats_of_toistr_processing_done) {
+      console.log("tax_hashtable.cats_of_toistr not yet here, waiting 10ms")
+      setTimeout(addPOIsToMap,10,geoJSONfeatureCollection); //no IE < 10!
+      return;
+    }
+
     var cats = '';
     if(feature.properties.type_of_initiative) {
       //if taxonomy is not here yet, this doesn't work...
@@ -424,6 +430,10 @@ function convertFlattaxToTree() {
 
     var parent_uuids = flat_type_of_initiative.subclass_of.value.split(";");
 
+    //do it also here, saves computation time
+    var parent_uuid_qnrs = parent_uuids.map(getQNR);
+    tax_hashtable.cats_of_toistr [ flat_type_of_initiative.type_of_initiative_tag.value ] = parent_uuid_qnrs;
+
     parent_uuids.forEach(function(single_toi_uuid) { //they may be subclass of more than one cat
       cats_that_hold_type_of_initiatives.forEach(function(cat){
         if(cat.UUID == single_toi_uuid) {
@@ -441,6 +451,18 @@ function convertFlattaxToTree() {
       });
     });
   };
+
+  // look for subcats in cats of tois, and add their parent cats
+  for(toi in tax_hashtable.cats_of_toistr) {
+    var cat_array = tax_hashtable.cats_of_toistr[toi];
+    cat_array.forEach(function (category_qnr) {
+      var parent_qnr = getQNR(tax_hashtable.cat_qindex[category_qnr].subclass_of.value);
+      if(parent_qnr != tax_hashtable.root_qnr) { //is a subcat
+        cat_array.push(parent_qnr);
+      }
+    });
+  }
+  tax_hashtable.cats_of_toistr_processing_done = true;
 
   function itemLabelCompare(a,b){
     // 'Others' cat should get sorted last
