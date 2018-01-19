@@ -4,13 +4,15 @@
   "description": "This is a Web-Map plugin that aims at displaying data from the [TransforMap API](https://github.com/TransforMap/data.transformap.co). It offers dynamic filters, which are built from a Wikibase graph hosted on [base.transformap.co](https://base.transformap.co).",
   "dependencies": {},
   "devDependencies": {
-    "uglifyjs": "^2.4.10"
+    "less": "^2.7.3",
+    "uglify-es": "^3.3.7"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npm run build-js && npm run build-css",
-    "build-css": "cat bower_components/leaflet/dist/leaflet.css bower_components/PruneCluster/dist/LeafletStyleSheet.css styles/css/style.css > dist/site.css",
-    "build-js": "uglifyjs bower_components/leaflet/dist/leaflet.js scripts/leaflet-hash.js scripts/red_fetch.js bower_components/PruneCluster/dist/PruneCluster.min.js scripts/map.js > dist/site.js"
+    "build": "npm run build-css ; npm run compile-css ; npm run compile-js",
+    "build-css": "lessc styles/less/style.less styles/css/style.css",
+    "compile-css": "cat bower_components/leaflet/dist/leaflet.css bower_components/PruneCluster/dist/LeafletStyleSheet.css styles/css/style.css > dist/site.css",
+    "compile-js": "uglifyjs bower_components/leaflet/dist/leaflet.js scripts/leaflet-hash.js scripts/red_fetch.js bower_components/PruneCluster/dist/PruneCluster.min.js scripts/map.js > dist/site.js"
   },
   "repository": {
     "type": "git",
