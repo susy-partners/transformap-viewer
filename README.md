@@ -13,7 +13,7 @@ This is a Web-Map plugin that aims at displaying data from the [TransforMap API]
 
 To embed the TransforMap-Viewer into your own website, the simplest way is via an iframe:
 
-    <iframe width="1200" height="500" src="https://susy-mapviewer.github.io/transformap-viewer/#5/51.166/10.451"></iframe>
+    <iframe width="1200" height="500" src="https://susy-mapviewer.github.io/transformap-viewer/"></iframe>
 
 You can change the background layer via the param "background" (e.g. src="http://viewer.transformap.co/?background=mapnik#5/51.166/10.451"). Currently 4 layers are supported:
 
@@ -49,10 +49,11 @@ Do not edit the CSS file in styles/css/style.css, edit styles/less/style.less an
 Install node *less* compiler to convert the stylesheet to less css:
 
 * Debian: `aptitude install node-less`
+* Windows: `npm install less -g`
 
 Compile it via :
 
-    lessc -x styles/less/style.less styles/css/style.css
+    lessc styles/less/style.less styles/css/style.css
 
 ## Dependencies
 
@@ -70,7 +71,7 @@ Fetch external dependencies:
 
 ## Deployment
 
-The site can be viewed on https://susy-mapviewer.github.io/transformap-viewer/ . Just push the branch gh-pages to update the site.
+The site can be viewed at https://susy-mapviewer.github.io/transformap-viewer/. Just push the branch gh-pages to update the site.
 
 Notes: for libraries used with bower, add a static copy of the files to the gh-pages branch to its location in bower_components/ (and add an exception to the .gitignore-file).
 
@@ -90,4 +91,4 @@ Currently, there are 3 "branches" of development:
 
 * http://viewer.transformap.co/ - "master" branch, repo see [here](https://github.com/TransforMap/transformap-viewer).
 * https://susy-mapviewer.github.io/transformap-viewer/ ([this](https://github.com/susy-mapviewer/transformap-viewer) repo) for embedding into the [solidarityeconomy.eu](http://solidarityeconomy.eu) site.
-* https://susy-partners.github.io/transformap-viewer/ for embedding into the websites of SUSY-partners. Repo see [here](https://github.com/susy-partners/transformap-viewer).
+* https://susy-partners.github.io/transo the websites of SUSY-partners. Repo see [here](https://github.com/susy-partners/transformap-viewer).
