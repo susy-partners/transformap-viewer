@@ -43,9 +43,7 @@
   <!-- Styles -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=PT+Sans:400,400italic,700,700italic&subset=latin,latin-ext" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:400,400italic,700,700italic&subset=latin,latin-ext" />
-  <link rel="stylesheet" href="bower_components/leaflet/dist/leaflet.css" />
-  <link rel="stylesheet" href="bower_components/PruneCluster/dist/LeafletStyleSheet.css" />
-  <link rel="stylesheet" href="styles/css/style.css" />
+  <link rel="stylesheet" href="dist/site.css" />
 </head>
 
 <body id="map">
@@ -90,10 +88,16 @@
       <%- getDescriptionText(properties)  %>
     </p>
 
+  <% if(properties['addr:housenumber'] || properties['addr:housename'] || properties['addr:street'] || properties['addr:postcode'] || properties['addr:city']) { %>
       <h3><%- T("address") %></h3>
     <p>
-      <%- properties['addr:housenumber'] %> <%- (properties['addr:housename']) ? properties['addr:housename'] + "," : "" %> <%- properties['addr:street'] %><br><%- properties['addr:postcode'] %> <%- properties['addr:city'] %>, <%- properties['addr:country'] %>
+      <span
+        <% if(properties['addr:housenumber_source'] == "osm") { %> class='osm' <% } %>
+      > <%- properties['addr:housenumber'] %> </span>
+      <%- (properties['addr:housename']) ? properties['addr:housename'] + "," : "" %> <%- properties['addr:street'] %><br>
+      <%- properties['addr:postcode'] %> <%- properties['addr:city'] %> <%- (properties['addr:country']) ? "," : "" %> <%- properties['addr:country'] %>
     </p>
+  <% } %>
 
     <% if ((properties['contact:email']) || (properties['contact:website']) || (properties['contact:phone']) || (properties['website'])) { %>
     <h3><%- T("contact") %></h3>
@@ -142,7 +146,7 @@
         %>
 
         <%  for (var i = 0; i < trans_array.length; i++) { %>
-            <span title='<%- desc_array[i] %>' > <%- trans_array[i] %><% if(wikipedia_array[i]) { %>
+            <span class='wp' title='<%- desc_array[i] %>' > <%- trans_array[i] %><% if(wikipedia_array[i]) { %>
             (<a href='<%- wikipedia_array[i] %>' target=_blank title='View Wikipedia article for this type of initiative'><img src='assets/wikipedia-48.png' class=wp alt='View Wikipedia article for this type of initiative' /></a>)<% } %><%- (i < trans_array.length - 1 ) ? ',' : '' %>
     </span> <% } %>
 
@@ -155,6 +159,25 @@
       <p>
         <%- modified %>
       </p>
+      <h3><%- T("linked_data") %></h3>
+      <table>
+        <% if (properties['osm']) { %>
+        <tr>
+          <td>
+            <a href='<%- properties['osm'] %>' target='_blank'>OpenStreetMap</a>
+          </td>
+          <td>
+          </td>
+        </tr>
+        <% } %>
+        <tr>
+          <td>
+            <a href='<%- properties['_uri'] %>' target='_blank'>TransforMap</a> (JSON)
+          </td>
+          <td>
+          </td>
+        </tr>
+      </table>
       <p style="text-align:right">
         <a href="https://susy-partners.github.io/transformap-editor/?place=<%- properties['_id'] %>" target="_blank">Edit</a>
       </p>
@@ -181,10 +204,6 @@
   <!-- Scripts -->
   <script defer="defer" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.10.2/jquery.js"></script>
   <script defer="defer" src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.5.2/underscore-min.js"></script>
-  <script defer="defer" src="bower_components/leaflet/dist/leaflet.js"></script>
-  <script defer="defer" src="scripts/leaflet-hash.js"></script>
-  <script defer="defer" src="bower_components/PruneCluster/dist/PruneCluster.min.js"></script>
-  <script defer="defer" src="scripts/red_fetch.js"></script>
-  <script defer="defer" src="scripts/map.js"></script>
+  <script defer="defer" src="dist/site.js"></script>
 </body>
 </html>
